@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t geckobjj/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true geckobjj/react-test npm test
+
+after_success:
+  - docker build -t geckobjj/fib-client ./client
+  - docker build -t geckobjj/fib-nginx ./nginx
+  - docker build -t geckobjj/fib-server ./server
+  - docker build -t geckobjj/fib-worker ./worker
+  #Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  #Take these images and push them to docker hub
+  - docker push geckobjj/fib-client
+  - docker push geckobjj/fib-nginx
+  - docker push geckobjj/fib-server
+  - docker push geckobjj/fib-worker
